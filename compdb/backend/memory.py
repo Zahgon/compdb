@@ -1,11 +1,9 @@
 from __future__ import print_function, unicode_literals, absolute_import
-
 import os
-
 from compdb.models import CompilationDatabaseInterface
 
-
 class InMemoryCompilationDatabase(CompilationDatabaseInterface):
+
     def __init__(self, compile_commands=None):
         if compile_commands is None:
             self.compile_commands = []

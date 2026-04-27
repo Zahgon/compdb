@@ -1,10 +1,7 @@
 from __future__ import print_function, unicode_literals, absolute_import
-
 import os
 import pprint
-
 import compdb
-
 
 class ProbeError(LookupError, compdb.CompdbError):
     """Raised when probing a compilation database failed"""
@@ -13,8 +10,8 @@ class ProbeError(LookupError, compdb.CompdbError):
         super(ProbeError, self).__init__(message)
         self.cause = cause
 
-
 class CompileCommand:
+
     def __init__(self, directory, file, arguments, output=None):
         self.directory = directory
         self.file = file
@@ -26,9 +23,7 @@ class CompileCommand:
         return os.path.normpath(os.path.join(self.directory, self.file))
 
     def __repr__(self):
-        return "{{directory: {}, file: {}, arguments: {}, output: {}}}".format(
-            repr(self.directory),
-            repr(self.file), pprint.pformat(self.arguments), repr(self.output))
+        return '{{directory: {}, file: {}, arguments: {}, output: {}}}'.format(repr(self.directory), repr(self.file), pprint.pformat(self.arguments), repr(self.output))
 
     def __str__(self):
         return self.__repr__()
@@ -44,8 +39,8 @@ class CompileCommand:
     def __ne__(self, other):
         return not self == other
 
-
 class CompilationDatabaseInterface(object):
+
     @classmethod
     def probe_directory(cls, directory):
         """Probe compilation database for a specific directory.
@@ -55,8 +50,7 @@ class CompilationDatabaseInterface(object):
         If the directory does not contain a database,
         a ProbeError should be raised (the default action if not overriden).
         """
-        raise ProbeError(
-            "{}: compilation databases not found".format(directory))
+        raise ProbeError('{}: compilation databases not found'.format(directory))
 
     def get_compile_commands(self, filepath):
         """Get the compile commands for the given file.

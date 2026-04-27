@@ -1,32 +1,15 @@
 from __future__ import print_function, unicode_literals, absolute_import
-
 import fnmatch
 import itertools
 import os
 
-
 class FileScanner(object):
+
     def __init__(self):
         self.extensions = []
         self.suppressions = []
-        self.source_exts = [
-            '.c',
-            '.C',
-            '.cc',
-            '.c++',
-            '.C++',
-            '.cxx',
-            '.cpp',
-        ]
-        self.header_exts = [
-            '.h',
-            '.H',
-            '.hh',
-            '.h++',
-            '.H++',
-            '.hxx',
-            '.hpp',
-        ]
+        self.source_exts = ['.c', '.C', '.cc', '.c++', '.C++', '.cxx', '.cpp']
+        self.header_exts = ['.h', '.H', '.hh', '.h++', '.H++', '.hxx', '.hpp']
 
     def enable_group(self, group):
         if group == 'source':
@@ -35,11 +18,7 @@ class FileScanner(object):
             self.extensions += self.header_exts
 
     def add_suppressions(self, suppressions):
-        # filter out suppressions
-        # could convert the fnmatch expression to regex
-        # and use re.search() instead of prefixing */ pattern
-        self.suppressions.extend(
-            ['*/{}'.format(supp) for supp in suppressions])
+        self.suppressions.extend(['*/{}'.format(supp) for supp in suppressions])
 
     def _accept_path(self, path):
         if os.path.splitext(path)[1] not in self.extensions:
@@ -57,5 +36,4 @@ class FileScanner(object):
                     yield out_path
 
     def scan_many(self, paths):
-        return itertools.chain.from_iterable((self.scan(path)
-                                              for path in paths))
+        return itertools.chain.from_iterable((self.scan(path) for path in paths))

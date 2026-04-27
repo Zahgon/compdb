@@ -1,16 +1,13 @@
 from __future__ import print_function, unicode_literals, absolute_import
-
 import json
 import os
 import re
 import shlex
-
 import compdb.utils
-
-from compdb.models import (CompileCommand, CompilationDatabaseInterface)
-
+from compdb.models import CompileCommand, CompilationDatabaseInterface
 
 class JSONCompilationDatabase(CompilationDatabaseInterface):
+
     def __init__(self, json_db_path):
         self.json_db_path = json_db_path
         self.__data = None
@@ -26,14 +23,12 @@ class JSONCompilationDatabase(CompilationDatabaseInterface):
     def get_compile_commands(self, filepath):
         filepath = compdb.utils.logical_abspath(filepath)
         for elem in self._data:
-            if os.path.normpath(os.path.join(elem['directory'],
-                                             elem['file'])) == filepath:
+            if os.path.normpath(os.path.join(elem['directory'], elem['file'])) == filepath:
                 yield self._dict_to_compile_command(elem)
 
     def get_all_files(self):
         for entry in self._data:
-            yield os.path.normpath(
-                os.path.join(entry['directory'], entry['file']))
+            yield os.path.normpath(os.path.join(entry['directory'], entry['file']))
 
     def get_all_compile_commands(self):
         return map(self._dict_to_compile_command, self._data)
@@ -43,14 +38,8 @@ class JSONCompilationDatabase(CompilationDatabaseInterface):
         if 'arguments' in d:
             arguments = d['arguments']
         else:
-            # PERFORMANCE: I think shlex is inherently slow,
-            # something performing better may be necessary
-            arguments = shlex.split(d['command'],
-                                    # XXX: os.name is "posix" on mysys2/cygwin,
-                                    # is that correct?
-                                    posix=os.name == "posix")
-        return CompileCommand(d['directory'], d['file'], arguments,
-                              d.get('output'))
+            arguments = shlex.split(d['command'], posix=os.name == 'posix')
+        return CompileCommand(d['directory'], d['file'], arguments, d.get('output'))
 
     @property
     def _data(self):
@@ -59,44 +48,32 @@ class JSONCompilationDatabase(CompilationDatabaseInterface):
                 self.__data = json.load(f)
         return self.__data
 
-
 def arguments_to_json(arguments):
     cmd_line = '"'
     for i, argument in enumerate(arguments):
         if i != 0:
             cmd_line += ' '
-        has_space = re.search(r"\s", argument) is not None
-        # reader now accepts simple quotes, so we need to support them here too
+        has_space = re.search('\\s', argument) is not None
         has_simple_quote = "'" in argument
         need_quoting = has_space or has_simple_quote
         if need_quoting:
-            cmd_line += r'\"'
-        cmd_line += argument.replace("\\", r'\\\\').replace(r'"', r'\\\"')
+            cmd_line += '\\"'
+        cmd_line += argument.replace('\\', '\\\\\\\\').replace('"', '\\\\\\"')
         if need_quoting:
-            cmd_line += r'\"'
+            cmd_line += '\\"'
     return cmd_line + '"'
 
-
 def str_to_json(s):
-    return '"{}"'.format(s.replace("\\", "\\\\").replace('"', r'\"'))
-
+    return '"{}"'.format(s.replace('\\', '\\\\').replace('"', '\\"'))
 
 def compile_command_to_json(compile_command):
-    output_str = ""
+    output_str = ''
     if compile_command.output:
-        output_str = ',\n  "output": {}'.format(
-            str_to_json(compile_command.output))
-    return r'''{{
-  "directory": {},
-  "command": {},
-  "file": {}{}
-}}'''.format(
-        str_to_json(compile_command.directory),
-        arguments_to_json(compile_command.arguments),
-        str_to_json(compile_command.file), output_str)
-
+        output_str = ',\n  "output": {}'.format(str_to_json(compile_command.output))
+    return '{{\n  "directory": {},\n  "command": {},\n  "file": {}{}\n}}'.format(str_to_json(compile_command.directory), arguments_to_json(compile_command.arguments), str_to_json(compile_command.file), output_str)
 
 class JSONCompileCommandSerializer(object):
+
     def __init__(self, fp):
         self.fp = fp
         self.__count = 0
@@ -115,7 +92,6 @@ class JSONCompileCommandSerializer(object):
         if self.__count != 0:
             self.fp.write('\n')
         self.fp.write(']\n')
-
 
 def compile_commands_to_json(compile_commands, fp):
     """
